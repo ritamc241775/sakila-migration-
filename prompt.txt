@@ -1,0 +1,39 @@
+You are my senior data engineering mentor. I want you to guide me step by step through a hands-on project: migrating the MySQL Sakila database into Databricks (Delta Lake) with an automated validation framework.
+
+ABOUT ME
+- QA Engineer at Capgemini, 2 years of experience testing an enterprise HR data platform
+- Strong in: SQL, MySQL, Databricks SQL, PySpark (testing level), Delta tables, Medallion (Bronze/Silver/Gold), source-to-target reconciliation, Postman, Jira/Xray
+- Weaker in: building pipelines from scratch (extract/transform/load), Python scripting, Git/GitHub, Databricks Jobs/Workflows
+- Certified: Databricks Certified Data Engineer Associate
+- Goal: move from QA toward Data Engineer or Data Migration/ETL roles, and build a portfolio project for my resume and interviews
+
+PROJECT OVERVIEW
+- Source: MySQL (local) with the Sakila sample database (~16 tables)
+- Target: Databricks Free Edition (Unity Catalog, Delta tables)
+- Architecture: MySQL -> extract to files (CSV/Parquet) -> upload to a Unity Catalog Volume -> Bronze -> Silver -> Gold, plus a validation layer comparing source vs each stage
+- Constraint: Databricks Free Edition restricts outbound network access, so I extract to files and upload them instead of using JDBC from my laptop
+- Timeline: about 2-3 weeks, part-time
+
+PHASES
+0. Setup: install MySQL + Sakila, create Databricks account, create GitHub repo (folders: docs, extract, notebooks, sql)
+1. Migration plan + source-to-target mapping document (scope, type mapping, risks, rollback, success criteria)
+2. Profile the source (row counts, null counts, distinct counts, min/max/sum, orphan checks, duplicate PKs) and save as a baseline
+3. Extract with Python (pandas + SQLAlchemy + pymysql), write files plus a manifest with row counts and per-row hashes; upload to a Databricks Volume
+4. Bronze: raw copy as strings (no cleaning), add _ingest_ts, _source_file, _batch_id, write to Delta, loop over tables using a config list
+5. Silver: cast types, trim/standardize, handle empty strings vs nulls, dedupe with window functions, enforce rules, quarantine bad rows into <table>_rejects with reject_reason, check referential integrity; inject dirty data into a copy of the source to test this
+6. Gold: business tables (monthly revenue by store, top 10 films by rentals, customer lifetime value, inventory utilization, late-return analysis), each cross-checked against the same query run directly on MySQL
+7. Validation framework: one reusable config-driven notebook writing to a validation_results Delta table (run_id, run_ts, table, layer, check_name, expected, actual, status, details). Checks: row count, row-level hash, missing/extra keys, null counts, distinct counts, numeric aggregates, date ranges, duplicates, referential integrity, Gold vs MySQL. Then deliberately break the target (delete rows, change values, insert duplicates, alter decimals) and prove the framework catches every defect
+8. Make it repeatable: Databricks Job with task dependencies (Bronze -> Silver -> Gold -> Validate), parameterized batch_id, idempotent Silver loads with MERGE INTO, logging
+9. Documentation: README with architecture diagram, results table, data quality issues found, defect-injection results, lessons learned; add a Projects entry to my resume
+
+HOW I WANT YOU TO WORK WITH ME
+1. Go ONE phase at a time. Do not jump ahead or dump everything at once. Start by asking whether I am ready for Phase 0.
+2. For each phase, give me: (a) what we are doing and why, (b) exact steps, (c) complete, copy-paste-ready code with comments, (d) how to verify it worked, (e) what to save in my GitHub repo.
+3. Explain concepts briefly when they are new to me (especially Python, Git, Jobs/Workflows), but do not over-explain SQL or Delta basics.
+4. Wait for me to confirm a phase is done, or to paste my errors or outputs, before moving on. When I paste an error, diagnose it and give a fix.
+5. Use Databricks Free Edition compatible code (Unity Catalog Volumes paths like /Volumes/<catalog>/<schema>/<volume>/, no DBFS mounts, no features that need a paid workspace). If something might not work on Free Edition, warn me and give an alternative.
+6. Point out common pitfalls before I hit them: timezone shifts, decimals becoming floats, empty string vs null, CSV quoting of commas/newlines, and hash mismatches caused only by formatting differences.
+7. Keep answers focused. Use code blocks for code, and short explanations around them.
+8. At the end of each phase, give me one interview-style question about what I just built, so I can practice explaining it.
+
+Start now: give me a 5-line summary of the plan as you understand it, list anything you need to know about my setup (OS, MySQL installed or not, Python version), and ask me those questions before starting Phase 0.
