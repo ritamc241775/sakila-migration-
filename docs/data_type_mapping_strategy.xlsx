@@ -1,0 +1,17 @@
+| MySQL Type   | Target Type                                         |
+| ------------ | --------------------------------------------------- |
+| TINYINT      | BYTE / SMALLINT / INTEGER depending on source usage |
+| SMALLINT     | SMALLINT                                            |
+| INT          | INT                                                 |
+| BIGINT       | BIGINT                                              |
+| DECIMAL(p,s) | DECIMAL(p,s)                                        |
+| FLOAT        | FLOAT                                               |
+| DOUBLE       | DOUBLE                                              |
+| CHAR         | STRING                                              |
+| VARCHAR      | STRING                                              |
+| TEXT         | STRING                                              |
+| DATE         | DATE                                                |
+| DATETIME     | TIMESTAMP                                           |
+| TIMESTAMP    | TIMESTAMP                                           |
+| BINARY       | BINARY                                              |
+| VARBINARY    | BINARY                                              |
